@@ -1,0 +1,60 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block content %}
+
+<h3 class="mb-4">Officer Dashboard</h3>
+
+<div class="row mb-4">
+
+    <div class="col-md-4">
+        <div class="card-custom bg-primary shadow-soft">
+            <h5>Total Applications</h5>
+            <h2>{{ total }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card-custom shadow-soft" style="background:#1abc9c;">
+            <h5>Selected</h5>
+            <h2>{{ selected }}</h2>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card-custom shadow-soft" style="background:#ff6b6b;">
+            <h5>Rejected</h5>
+            <h2>{{ rejected }}</h2>
+        </div>
+    </div>
+
+</div>
+
+<div class="card shadow-soft p-3">
+    <h5>Your Placement Drives</h5>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Company</th>
+                <th>Export</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for job in jobs %}
+            <tr>
+                <td>{{ job.title }}</td>
+                <td>
+                    <a href="/jobs/export/{{ job.id }}/" class="btn btn-sm btn-primary">
+                        Basic Excel
+                    </a>
+
+                    <a href="/jobs/export-responses/{{ job.id }}/"
+                       class="btn btn-sm btn-success">
+                        Responses
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

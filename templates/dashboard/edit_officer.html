@@ -1,0 +1,41 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block content %}
+
+<h3 class="mb-4">Edit Placement Officer</h3>
+
+<div class="card shadow-soft p-4">
+
+    <a href="/dashboard/manage-officers/" class="btn btn-secondary btn-sm mb-3">
+        Back
+    </a>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input type="text"
+                   name="username"
+                   class="form-control"
+                   value="{{ officer.username }}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email"
+                   name="email"
+                   class="form-control"
+                   value="{{ officer.email }}"
+                   required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Update Officer
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

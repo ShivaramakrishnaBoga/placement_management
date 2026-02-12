@@ -1,0 +1,258 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+.form-wrapper {
+    display: flex;
+    gap: 40px;
+}
+
+.form-container {
+    flex: 2;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.preview-container {
+    flex: 1;
+    position: sticky;
+    top: 100px;
+}
+
+.section-title {
+    font-weight: 600;
+    margin-bottom: 24px;
+    font-size: 18px;
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.form-control, .form-select {
+    height: 44px;
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+}
+
+.form-control:focus {
+    border-color: #2563EB;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
+}
+
+.required-star {
+    color: red;
+}
+
+.tag-chip {
+    background: #E5E7EB;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    margin-right: 6px;
+    display: inline-flex;
+    align-items: center;
+}
+
+.tag-chip span {
+    margin-left: 6px;
+    cursor: pointer;
+}
+
+.color-swatch {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    cursor: pointer;
+    border: 3px solid transparent;
+}
+
+.color-swatch.selected {
+    border: 3px solid #2563EB;
+}
+
+.preview-card {
+    width: 100%;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+</style>
+
+<div class="form-wrapper">
+
+    <!-- LEFT: FORM -->
+    <div class="form-container">
+
+        <h3 class="mb-4">Create Job Posting</h3>
+
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Basic Information -->
+            <div class="section-title">Basic Information</div>
+
+            <div class="mb-3">
+                <label class="form-label">Company Name <span class="required-star">*</span></label>
+                <input type="text" name="company_name" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Job Title <span class="required-star">*</span></label>
+                <input type="text" name="title" id="titleInput" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Company Logo <span class="required-star">*</span></label>
+                <input type="file" name="company_logo" class="form-control" accept="image/*" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Eligible Branches</label>
+                <input type="text" name="branches" class="form-control" placeholder="">
+            </div>
+
+
+            <div class="mb-4">
+                <label class="form-label">Posting Date <span class="required-star">*</span></label>
+                <input type="date" name="posting_date" class="form-control" required>
+            </div>
+
+            <!-- Job Details -->
+            <div class="section-title">Job Details</div>
+
+            <div class="mb-3">
+                <label class="form-label">Job Description <span class="required-star">*</span></label>
+                <textarea name="description" rows="6" class="form-control" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Employment Type</label>
+                <select name="employment_type" class="form-select">
+                    <option>Full time</option>
+                    <option>Part time</option>
+                    <option>Contract</option>
+                    <option>Internship</option>
+                </select>
+            </div>
+
+            <!-- Tags -->
+            <div class="section-title mt-4">Job Tags</div>
+
+            <input type="text" id="tagInput" class="form-control mb-2" placeholder="Type and press Enter">
+            <div id="tagContainer"></div>
+            <input type="hidden" name="job_tags" id="hiddenTags">
+
+            <!-- Salary -->
+            <div class="section-title mt-4">Salary</div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="number" name="salary_amount" class="form-control" placeholder="250">
+                </div>
+                <div class="col-md-6">
+                    <select name="salary_period" class="form-select">
+                        <option>hr</option>
+                        <option>day</option>
+                        <option>month</option>
+                        <option>year</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Color -->
+            <div class="section-title mt-4">Card Color</div>
+
+            <div class="d-flex gap-3">
+                <div class="color-swatch selected" data-color="#FFE4D6" style="background:#FFE4D6"></div>
+                <div class="color-swatch" data-color="#D6F5E8" style="background:#D6F5E8"></div>
+                <div class="color-swatch" data-color="#E8DEFF" style="background:#E8DEFF"></div>
+                <div class="color-swatch" data-color="#D6E8FF" style="background:#D6E8FF"></div>
+            </div>
+            <input type="hidden" name="card_color" id="selectedColor" value="#FFE4D6">
+
+            <div class="mt-4 d-flex gap-3">
+                <button type="submit" class="btn text-white" style="background:#2563EB;">
+                    Post Job
+                </button>
+                <button type="button" class="btn btn-secondary">
+                    Save Draft
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- RIGHT: LIVE PREVIEW -->
+    <div class="preview-container">
+
+        <h5>Card Preview</h5>
+
+        <div id="previewCard" class="preview-card" style="background:#FFE4D6;">
+            <small id="previewDate">Today</small>
+            <h6 id="previewCompany" class="mt-2">Company Name</h6>
+            <h4 id="previewTitle">Job Title</h4>
+            <div id="previewTags"></div>
+            <div class="mt-3">
+                <strong id="previewSalary">250/hr</strong>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+// Live title preview
+document.getElementById("titleInput").addEventListener("input", function(){
+    document.getElementById("previewTitle").innerText = this.value;
+});
+
+// Tag system
+let tags = [];
+document.getElementById("tagInput").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){
+        e.preventDefault();
+        let value = this.value.trim();
+        if(value && tags.length < 6){
+            tags.push(value);
+            updateTags();
+            this.value = "";
+        }
+    }
+});
+
+function updateTags(){
+    let container = document.getElementById("tagContainer");
+    let preview = document.getElementById("previewTags");
+    container.innerHTML = "";
+    preview.innerHTML = "";
+
+    tags.forEach((tag, index) => {
+        container.innerHTML += `<div class="tag-chip">${tag} <span onclick="removeTag(${index})">×</span></div>`;
+        preview.innerHTML += `<span class="tag-chip">${tag}</span>`;
+    });
+
+    document.getElementById("hiddenTags").value = tags.join(",");
+}
+
+function removeTag(index){
+    tags.splice(index, 1);
+    updateTags();
+}
+
+// Color selector
+document.querySelectorAll(".color-swatch").forEach(swatch => {
+    swatch.addEventListener("click", function(){
+        document.querySelectorAll(".color-swatch").forEach(s => s.classList.remove("selected"));
+        this.classList.add("selected");
+        document.getElementById("selectedColor").value = this.dataset.color;
+        document.getElementById("previewCard").style.background = this.dataset.color;
+    });
+});
+</script>
+
+{% endblock %}

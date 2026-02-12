@@ -1,0 +1,96 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block content %}
+
+<style>
+.job-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+.job-card {
+    width: 320px;
+    border-radius: 20px;
+    padding: 24px;
+    border: 2px solid white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    position: relative;
+    transition: 0.3s;
+    background: var(--card-bg, #FFE4D6);
+}
+
+.job-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+.job-tag {
+    border: 1.5px solid rgba(0,0,0,0.15);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.details-btn {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    background: black;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 24px;
+    transition: 0.2s;
+}
+
+.details-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+</style>
+
+<h3 class="mb-4">Available Jobs</h3>
+
+<div class="job-grid">
+
+{% for job in jobs %}
+<div class="job-card" data-bg="{{ job.card_color|default:'#FFE4D6' }}">
+
+
+    <small>{{ job.posting_date }}</small>
+
+    <h6 class="mt-2">{{ job.company_name }}</h6>
+
+    <h4>{{ job.title }}</h4>
+
+  {% for tag in job.tag_list %}
+    <span class="job-tag">{{ tag }}</span>
+{% endfor %}
+
+    <div class="mt-3">
+        <strong>{{ job.salary_amount }}/{{ job.salary_period }}</strong>
+        <div class="text-muted">{{ job.location_city }}, {{ job.location_state }}</div>
+    </div>
+
+    <a href="/jobs/{{ job.id }}/">
+        <button class="details-btn">Details</button>
+    </a>
+
+
+</div>
+{% endfor %}
+
+</div>
+
+
+
+<script>
+    document.querySelectorAll('.job-card').forEach(card => {
+    card.style.background = card.dataset.bg;
+});
+
+</script>
+{% endblock %}

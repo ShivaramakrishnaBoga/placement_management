@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>Welcome to Placement Portal</h3>
+<a href="/accounts/login/">Login</a> |
+<a href="/accounts/signup/">Student Signup</a>
+{% for note in notifications %}
+<div style="background:yellow;padding:10px;">
+    {{ note.message }}
+</div>
+{% endfor %}
+
+{% endblock %}

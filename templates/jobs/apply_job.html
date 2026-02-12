@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h3>Apply for {{ job.title }}</h3>
+
+<form method="POST">
+    {% csrf_token %}
+
+    {% for field in fields %}
+        <label>{{ field.field_name }}</label><br>
+
+        {% if field.field_type == 'text' %}
+            <input type="text" name="{{ field.field_name }}"><br><br>
+
+        {% elif field.field_type == 'number' %}
+            <input type="number" name="{{ field.field_name }}"><br><br>
+
+        {% elif field.field_type == 'file' %}
+            <input type="file" name="{{ field.field_name }}"><br><br>
+
+        {% endif %}
+    {% endfor %}
+
+    <button type="submit">Submit Application</button>
+</form>
+
+{% endblock %}

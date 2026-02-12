@@ -1,0 +1,53 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block content %}
+
+<h3 class="mb-4">Manage Students</h3>
+
+<div class="card shadow-soft p-4">
+
+    <div class="d-flex justify-content-between mb-3">
+        <a href="/dashboard/admin/" class="btn btn-secondary btn-sm">Back</a>
+        <a href="/dashboard/add-student/" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus"></i> Add Student
+        </a>
+    </div>
+
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Roll Number</th>
+                <th>Branch</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in students %}
+            <tr>
+                <td>{{ s.username }}</td>
+                <td>{{ s.email }}</td>
+                <td>{{ s.roll_number }}</td>
+                <td>{{ s.branch }}</td>
+                <td>
+                    <a href="/dashboard/edit-student/{{ s.id }}/" class="btn btn-sm btn-warning">
+                        Edit
+                    </a>
+                    <a href="/dashboard/delete-student/{{ s.id }}/"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Delete this student?')">
+                       Delete
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5">No students available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

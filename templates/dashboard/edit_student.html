@@ -1,0 +1,59 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block content %}
+
+<h3 class="mb-4">Edit Student</h3>
+
+<div class="card shadow-soft p-4">
+
+    <a href="/dashboard/manage-students/" class="btn btn-secondary btn-sm mb-3">
+        Back
+    </a>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input type="text"
+                   name="username"
+                   class="form-control"
+                   value="{{ student.username }}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input type="email"
+                   name="email"
+                   class="form-control"
+                   value="{{ student.email }}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Roll Number</label>
+            <input type="text"
+                   name="roll_number"
+                   class="form-control"
+                   value="{{ student.roll_number }}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Branch</label>
+            <input type="text"
+                   name="branch"
+                   class="form-control"
+                   value="{{ student.branch }}"
+                   required>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Update Student
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block content %}
+
+<h3 class="mb-4">Student Dashboard</h3>
+
+<div class="card shadow-soft p-3">
+
+    <h5>Your Applications</h5>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Company</th>
+                <th>Status</th>
+                <th>Update</th>
+            </tr>
+        </thead>
+        <tbody>
+
+        {% for app in applications %}
+        <tr>
+            <td>{{ app.job.title }}</td>
+            <td>
+                {% if app.status == "Selected" %}
+                    <span class="badge bg-success">Selected</span>
+                {% elif app.status == "Rejected" %}
+                    <span class="badge bg-danger">Rejected</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark">Applied</span>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if app.status == "Applied" %}
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="application_id" value="{{ app.id }}">
+                    <select name="result" class="form-select form-select-sm">
+                        <option value="Selected">Selected</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                    <button class="btn btn-sm btn-primary mt-2">
+                        Submit
+                    </button>
+                </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

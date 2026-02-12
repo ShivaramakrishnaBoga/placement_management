@@ -1,0 +1,49 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block content %}
+
+<h3 class="mb-4">Manage Placement Officers</h3>
+
+<div class="card shadow-soft p-4">
+
+    <div class="d-flex justify-content-between mb-3">
+        <a href="/dashboard/admin/" class="btn btn-secondary btn-sm">Back</a>
+        <a href="/dashboard/add-officer/" class="btn btn-primary btn-sm">
+            <i class="bi bi-plus"></i> Add Officer
+        </a>
+    </div>
+
+    <table class="table table-hover">
+        <thead class="table-light">
+            <tr>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for o in officers %}
+            <tr>
+                <td>{{ o.username }}</td>
+                <td>{{ o.email }}</td>
+                <td>
+                    <a href="/dashboard/edit-officer/{{ o.id }}/" class="btn btn-sm btn-warning">
+                        Edit
+                    </a>
+                    <a href="/dashboard/delete-officer/{{ o.id }}/"
+                       class="btn btn-sm btn-danger"
+                       onclick="return confirm('Delete this officer?')">
+                       Delete
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No officers available.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

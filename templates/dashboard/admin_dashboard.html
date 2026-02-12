@@ -1,0 +1,136 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <h3 class="mb-0">Dashboard Overview</h3>
+
+    <a href="{% url 'officer_dashboard' %}" 
+       class="btn btn-primary">
+        <i class="bi bi-briefcase"></i> View Officer Dashboard
+    </a>
+
+</div>
+
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+
+    <div class="col-md-3">
+        <div class="card-custom bg-primary shadow-soft">
+            <h5>Total Students</h5>
+            <h2>{{ students_count }}</h2>
+            <i class="bi bi-mortarboard fs-3"></i>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card-custom shadow-soft" style="background:#1abc9c;">
+            <h5>Total Companies</h5>
+            <h2>{{ jobs|length }}</h2>
+            <i class="bi bi-building fs-3"></i>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card-custom shadow-soft" style="background:#9b59b6;">
+            <h5>Active Drives</h5>
+            <h2>{{ jobs|length }}</h2>
+            <i class="bi bi-calendar-event fs-3"></i>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card-custom shadow-soft" style="background:#ff6b6b;">
+            <h5>Total Applications</h5>
+            <h2>{{ total }}</h2>
+            <i class="bi bi-people fs-3"></i>
+        </div>
+    </div>
+
+</div>
+
+<!-- Charts + Table -->
+<div class="row">
+
+    <!-- Donut Chart -->
+    <div class="col-md-6">
+        <div class="card shadow-soft p-3">
+            <h5>Placements Overview</h5>
+            <canvas id="placementChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Latest Drives -->
+    <div class="col-md-6">
+        <div class="card shadow-soft p-3">
+            <h5>Latest Placement Drives</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in jobs %}
+                    <tr>
+                        <td>{{ job.title }}</td>
+                        <td>
+                            <span class="badge bg-primary">In Progress</span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="2">No placement drives available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!-- Safe JSON Injection -->
+{{ selected|json_script:"selected-data" }}
+{{ total|json_script:"total-data" }}
+{{ rejected|json_script:"rejected-data" }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const selected = JSON.parse(document.getElementById("selected-data").textContent);
+    const total = JSON.parse(document.getElementById("total-data").textContent);
+    const rejected = JSON.parse(document.getElementById("rejected-data").textContent);
+
+    const applied = total - selected - rejected;
+
+    const ctx = document.getElementById("placementChart");
+
+    if (ctx) {
+        new Chart(ctx, {
+            type: "doughnut",
+            data: {
+                labels: ["Selected", "Applied", "Rejected"],
+                datasets: [{
+                    data: [selected, applied, rejected],
+                    backgroundColor: ["#1abc9c", "#00cec9", "#ff6b6b"]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: "right"
+                    }
+                }
+            }
+        });
+    }
+
+});
+</script>
+
+{% endblock %}
