@@ -1,243 +1,97 @@
 {% extends 'dashboard/dashboard_base.html' %}
 {% load static %}
 {% block content %}
-
 <style>
-.job-wrapper {
-    display: flex;
-    min-height: 85vh;
-    border-radius: 12px;
-    overflow: hidden;
-}
-
-.job-left {
-    background: #2C3E50;
-    color: white;
-    padding: 40px;
-    width: 55%;
-    position: relative;
-}
-
-.job-right {
-    width: 45%;
-    background: #f8f9fa;
-    display: flex;
-    flex-direction: column;
-}
-
-.diagonal-divider {
-    position: absolute;
-    top: 0;
-    right: -50px;
-    width: 100px;
-    height: 100%;
-    background: white;
-    transform: skewX(-15deg);
-}
-
-.job-hero {
-    height: 220px;
-    background-size: cover;
-    background-position: center;
-}
-
-.form-card {
-    background: white;
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    margin: -60px 30px 30px 30px;
-}
-
-.form-control {
-    border-radius: 8px;
-}
-
-.form-control:focus {
-    border-color: #2196F3;
-    box-shadow: 0 0 0 2px rgba(33,150,243,0.2);
-}
-
-.required-star {
-    color: red;
-}
-
-.upload-box {
-    border: 2px dashed #ccc;
-    padding: 20px;
-    text-align: center;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.upload-box:hover {
-    background: #f1f1f1;
-}
-
-.tab-link {
-    color: #ccc;
-    margin-right: 20px;
-    cursor: pointer;
-}
-
-.tab-link.active {
-    color: #2196F3;
-    border-bottom: 2px solid #2196F3;
-    padding-bottom: 5px;
-}
-
-@media(max-width: 991px){
-    .job-wrapper {
-        flex-direction: column;
-    }
-    .job-left, .job-right {
-        width: 100%;
-    }
-}
+.hero{border-radius:16px;overflow:hidden;background:#0f172a;color:#fff;display:grid;grid-template-columns:1.1fr .9fr;min-height:420px}
+.hero-left{padding:36px}
+.hero-right{background:#f8fafc;padding:0}
+.hero-image{height:100%;min-height:420px;background-size:cover;background-position:center}
+.meta-pill{display:inline-block;padding:6px 12px;background:rgba(255,255,255,.15);border-radius:999px;margin-right:8px;margin-bottom:8px}
+.apply-card{margin-top:24px;background:#fff;border-radius:14px;padding:24px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
+@media(max-width:991px){.hero{grid-template-columns:1fr}.hero-image{min-height:220px}}
 </style>
 
-<div class="job-wrapper">
+<div class="hero">
+  <div class="hero-left">
+    <small>{{ job.company_name }} • {{ job.posting_date|date:'d M Y' }}</small>
+    <h2 class="mt-2">{{ job.title }}</h2>
+    <p class="mt-3">{{ job.description }}</p>
 
-    <!-- LEFT SECTION -->
-    <div class="job-left">
-
-        <div class="diagonal-divider"></div>
-
-        <!-- Breadcrumb -->
-        <small class="text-light">
-            Working here / {{ job.branches }} / {{ job.title }}
-        </small>
-
-        <h2 class="mt-3">{{ job.title }}</h2>
-
-        <p class="mt-3">
-            {{ job.description }}
-        </p>
-
-        <div class="mt-4">
-            <a href="#apply-form" class="btn btn-primary me-2">Apply Now</a>
-            <button class="btn btn-outline-light">Recommend</button>
-        </div>
-
-        <hr class="my-4 text-light">
-
-        <!-- Metadata -->
-        <div class="d-flex justify-content-between text-light">
-
-            <div>
-                <i class="bi bi-building"></i><br>
-                <small>Department</small><br>
-                {{ job.branches }}
-            </div>
-
-            <div>
-                <i class="bi bi-geo-alt"></i><br>
-                <small>Location</small><br>
-                India
-            </div>
-
-            <div>
-                <i class="bi bi-cash"></i><br>
-                <small>Salary</small><br>
-                As per company norms
-            </div>
-
-        </div>
-
-        <hr class="my-4 text-light">
-
-        <!-- Tabs -->
-        <div>
-            <span class="tab-link active">Role details</span>
-            <span class="tab-link">Our mission</span>
-            <span class="tab-link">Office</span>
-            <span class="tab-link">Culture</span>
-        </div>
-
-        <div class="mt-4">
-
-            <small class="text-secondary">POSITION</small>
-            <p>{{ job.title }}</p>
-
-            <small class="text-secondary">EMPLOYMENT</small>
-            <p>In-house or remote</p>
-
-            <small class="text-secondary">YOUR MISSION</small>
-            <p>{{ job.description }}</p>
-
-            <small class="text-secondary">HERE'S HOW YOU'LL BE CONTRIBUTING</small>
-            <ul>
-                <li>Work on real projects</li>
-                <li>Collaborate with team</li>
-                <li>Deliver scalable solutions</li>
-            </ul>
-
-        </div>
-
-    </div>
-
-    <!-- RIGHT SECTION -->
-    <div class="job-right">
-
-        <!-- Hero Image -->
-        <div class="job-hero"
-          <div class="job-hero"
-     style="background-image: url('{{ STATIC_URL }}images/office.jpg');">
+    <span class="meta-pill">Branches: {{ job.branches }}</span>
+    <span class="meta-pill">Type: {{ job.employment_type|default:'-' }}</span>
+    <span class="meta-pill">Salary: {{ job.salary_amount|default:'--' }}/{{ job.salary_period|default:'-' }}</span>
+    <span class="meta-pill">Apply Until: {{ job.application_deadline|date:'d M Y' }}</span>
+  </div>
+  <div class="hero-right">
+    <div class="hero-image" style="background-image:url('{% if job.image %}{{ job.image.url }}{% else %}{% static 'images/office.jpg' %}{% endif %}')"></div>
+  </div>
 </div>
 
-        </div>
+{% if request.user.role == 'STUDENT' %}
+<div id="apply-form" class="apply-card">
+  <h4>Student Application Form</h4>
+  {% if already_applied %}
+    <div class="alert alert-info">You have already applied for this job.</div>
+  {% elif job.is_deadline_passed %}
+    <div class="alert alert-dark">Application deadline is over for this job.</div>
+  {% else %}
+    <form method="POST" action="{% url 'apply_job' job.id %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      {% for field in fields %}
+      <div class="mb-3">
+        <label class="form-label">{{ field.field_name }}{% if field.is_required %} <span class="text-danger">*</span>{% endif %}</label>
+        {% if field.field_type == 'text' %}
+          <input type="text" name="{{ field.field_name }}" class="form-control" {% if field.is_required %}required{% endif %}>
+        {% elif field.field_type == 'number' %}
+          <input type="number" name="{{ field.field_name }}" class="form-control" {% if field.is_required %}required{% endif %}>
+        {% elif field.field_type == 'percentage' %}
+          <input type="number" min="0" max="100" step="0.01" name="{{ field.field_name }}" class="form-control" {% if field.is_required %}required{% endif %}>
+        {% elif field.field_type == 'multi_file' %}
+          <input type="file" name="{{ field.field_name }}" class="form-control" multiple {% if field.is_required %}required{% endif %}>
+        {% else %}
+          <input type="file" name="{{ field.field_name }}" class="form-control" {% if field.is_required %}required{% endif %}>
+        {% endif %}
+      </div>
+      {% empty %}
+      <p class="text-muted">No additional fields required. You can apply directly.</p>
+      {% endfor %}
 
-        <!-- Application Form -->
-        <div id="apply-form" class="form-card">
-
-            <h4>Ready to apply?</h4>
-            <p class="text-muted">Fill in the details below to apply.</p>
-
-            <form method="POST" enctype="multipart/form-data">
-                {% csrf_token %}
-
-                <div class="mb-3">
-                    <label>Name <span class="required-star">*</span></label>
-                    <input type="text" name="applicant_name" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label>Email <span class="required-star">*</span></label>
-                    <input type="email" name="applicant_email" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label>Phone <span class="required-star">*</span></label>
-                    <input type="tel" name="applicant_phone" class="form-control" required>
-                </div>
-
-                <div class="mb-3">
-                    <label>Upload CV <span class="required-star">*</span></label>
-                    <div class="upload-box">
-                        <i class="bi bi-cloud-upload"></i>
-                        <p class="mb-1">Drop file or click to upload</p>
-                        <small class="text-muted">Max size: 5MB</small>
-                        <input type="file"
-                               name="applicant_cv"
-                               accept=".pdf,.doc,.docx"
-                               required
-                               class="form-control mt-2">
-                    </div>
-                </div>
-
-                <button type="submit"
-                        class="btn w-100"
-                        style="background:#00A878; color:white;">
-                    Apply Now
-                </button>
-
-            </form>
-
-        </div>
-
-    </div>
-
+      <button type="submit" class="btn btn-success">Apply Now</button>
+    </form>
+  {% endif %}
 </div>
+{% endif %}
 
+{% if request.user.role == 'ADMIN' or request.user.role == 'OFFICER' %}
+<div class="apply-card mt-4">
+  <h4>Applications for this Job</h4>
+  <div class="table-responsive">
+    <table class="table">
+      <thead><tr><th>Student</th><th>Roll No</th><th>Status</th><th>Update</th></tr></thead>
+      <tbody>
+      {% for app in applications %}
+      <tr>
+        <td>{{ app.student.username }}</td>
+        <td>{{ app.student.roll_number }}</td>
+        <td>{{ app.status }}</td>
+        <td>
+          <form method="POST" action="{% url 'update_status' app.id %}" class="d-flex gap-2">
+            {% csrf_token %}
+            <select name="status" class="form-select form-select-sm" style="max-width:150px;">
+              <option value="Applied" {% if app.status == 'Applied' %}selected{% endif %}>Applied</option>
+              <option value="Selected" {% if app.status == 'Selected' %}selected{% endif %}>Selected</option>
+              <option value="Rejected" {% if app.status == 'Rejected' %}selected{% endif %}>Rejected</option>
+            </select>
+            <button class="btn btn-primary btn-sm" type="submit">Save</button>
+          </form>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4">No applications yet.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
 {% endblock %}

@@ -8,6 +8,9 @@ class Job(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField()
     branches = models.CharField(max_length=200)
+    posting_date = models.DateField(blank=True, null=True)
+    application_deadline = models.DateField(blank=True, null=True)
+    employment_type = models.CharField(max_length=30, blank=True, null=True)
 
     # Optional Visuals
     image = models.ImageField(upload_to='job_images/', blank=True, null=True)
@@ -32,6 +35,13 @@ class Job(models.Model):
         return self.title
 
     @property
+    def is_deadline_passed(self):
+        if not self.application_deadline:
+            return False
+        from django.utils import timezone
+        return timezone.localdate() > self.application_deadline
+
+    @property
     def tag_list(self):
         return self.job_tags.split(',') if self.job_tags else []
 
@@ -39,9 +49,18 @@ class Job(models.Model):
 
 #Dynamic Field Model
 class ApplicationField(models.Model):
+    FIELD_TYPES = (
+        ('text', 'Text'),
+        ('number', 'Number'),
+        ('percentage', 'Percentage'),
+        ('file', 'File'),
+        ('multi_file', 'Multiple Files'),
+    )
+
     job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name='fields')
     field_name = models.CharField(max_length=100)
-    field_type = models.CharField(max_length=50)  # text, number, file
+    field_type = models.CharField(max_length=50, choices=FIELD_TYPES, default='text')
+    is_required = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.job.title} - {self.field_name}"

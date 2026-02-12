@@ -1,96 +1,40 @@
 {% extends 'dashboard/dashboard_base.html' %}
 {% block content %}
-
 <style>
-.job-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-}
-
-.job-card {
-    width: 320px;
-    border-radius: 20px;
-    padding: 24px;
-    border: 2px solid white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    position: relative;
-    transition: 0.3s;
-    background: var(--card-bg, #FFE4D6);
-}
-
-.job-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-.job-tag {
-    border: 1.5px solid rgba(0,0,0,0.15);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 12px;
-    margin-right: 8px;
-    margin-bottom: 8px;
-    display: inline-block;
-}
-
-.details-btn {
-    position: absolute;
-    bottom: 24px;
-    right: 24px;
-    background: black;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 24px;
-    transition: 0.2s;
-}
-
-.details-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
+.job-grid{display:flex;flex-wrap:wrap;gap:24px}
+.job-card{width:330px;border-radius:20px;padding:24px;border:2px solid #fff;box-shadow:0 4px 12px rgba(0,0,0,.08);position:relative;transition:.3s;background:#FFE4D6;color:#111}
+.job-card.expired{background:#2f2f2f!important;color:#fff;border-color:#555}
+.job-card:hover{transform:translateY(-4px);box-shadow:0 8px 20px rgba(0,0,0,.12)}
+.job-logo{width:54px;height:54px;object-fit:cover;border-radius:12px}
+.job-tag{border:1.5px solid rgba(0,0,0,.15);border-radius:20px;padding:6px 14px;font-size:12px;margin-right:8px;margin-bottom:8px;display:inline-block}
+.job-card.expired .job-tag{border-color:#888}
+.deadline-pill{display:inline-block;padding:5px 10px;border-radius:999px;font-size:12px;background:#eff6ff}
+.job-card.expired .deadline-pill{background:#4b5563;color:#fff}
+.details-btn{position:absolute;bottom:24px;right:24px;background:black;color:white;border:none;padding:10px 20px;border-radius:24px;text-decoration:none}
 </style>
 
 <h3 class="mb-4">Available Jobs</h3>
-
 <div class="job-grid">
-
 {% for job in jobs %}
-<div class="job-card" data-bg="{{ job.card_color|default:'#FFE4D6' }}">
-
-
-    <small>{{ job.posting_date }}</small>
-
+<div class="job-card {% if job.is_deadline_passed %}expired{% endif %}" data-bg="{{ job.card_color|default:'#FFE4D6' }}">
+    {% if job.image %}<img src="{{ job.image.url }}" class="job-logo" alt="{{ job.company_name }} logo">{% endif %}
+    <div class="mt-2"><small>{{ job.posting_date|date:'d M Y' }}</small></div>
     <h6 class="mt-2">{{ job.company_name }}</h6>
-
     <h4>{{ job.title }}</h4>
+    <div class="mb-2"><span class="deadline-pill">Apply Until: {{ job.application_deadline|date:'d M Y' }}</span></div>
 
-  {% for tag in job.tag_list %}
-    <span class="job-tag">{{ tag }}</span>
-{% endfor %}
+    {% for tag in job.tag_list %}<span class="job-tag">{{ tag }}</span>{% endfor %}
 
-    <div class="mt-3">
-        <strong>{{ job.salary_amount }}/{{ job.salary_period }}</strong>
-        <div class="text-muted">{{ job.location_city }}, {{ job.location_state }}</div>
+    <div class="mt-3 mb-5">
+        <strong>{{ job.salary_amount|default:'--' }}/{{ job.salary_period|default:'-' }}</strong>
+        <div class="{% if job.is_deadline_passed %}text-light{% else %}text-muted{% endif %}">{{ job.location_city|default:'-' }}, {{ job.location_state|default:'-' }}</div>
     </div>
 
-    <a href="/jobs/{{ job.id }}/">
-        <button class="details-btn">Details</button>
-    </a>
-
-
+    <a href="{% url 'job_detail' job.id %}" class="details-btn">Details</a>
 </div>
 {% endfor %}
-
 </div>
-
-
-
 <script>
-    document.querySelectorAll('.job-card').forEach(card => {
-    card.style.background = card.dataset.bg;
-});
-
+  document.querySelectorAll('.job-card').forEach(card=>{ if(!card.classList.contains('expired')) card.style.background=card.dataset.bg; });
 </script>
 {% endblock %}

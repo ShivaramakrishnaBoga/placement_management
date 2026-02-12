@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from .forms import StudentSignupForm
 from .models import User
@@ -21,11 +22,8 @@ def login_view(request):
 
         user = authenticate(request, username=username, password=password)
 
-        print("AUTH USER:", user)
-
         if user:
             login(request, user)
-            print("LOGGED USER ROLE:", user.role)
 
             if user.role == 'ADMIN':
                 return redirect('/dashboard/admin/')
@@ -33,6 +31,8 @@ def login_view(request):
                 return redirect('/dashboard/officer/')
             else:
                 return redirect('/dashboard/student/')
+
+        messages.error(request, 'Invalid username or password.')
 
     return render(request, 'registration/login.html')
 
