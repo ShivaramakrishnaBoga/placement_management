@@ -1,13 +1,147 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<h3>Login</h3>
 
-<form method="POST" autocomplete="off">
-    {% csrf_token %}
-    <input type="text" name="username" placeholder="Username" autocomplete="off"><br><br>
-    <input type="password" name="password" placeholder="Password" autocomplete="new-password"><br><br>
-    <button type="submit">Login</button>
-</form>
+<style>
+:root {
+  --background: hsl(209, 40%, 96%);
+  --foreground: hsl(222, 47%, 11%);
+  --primary: hsl(216, 19%, 26%);
+  --border: hsl(212, 26%, 83%);
+  --card: hsl(210, 40%, 98%);
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--background);
+  margin: 0;
+}
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.auth-card {
+  background: var(--card);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.06);
+}
+
+.auth-card h2 {
+  margin-bottom: 25px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 6px;
+  display: block;
+  color: var(--foreground);
+}
+
+input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  font-size: 14px;
+  transition: 0.25s ease;
+  background: white;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(30,41,59,0.1);
+}
+
+.btn-submit {
+  width: 100%;
+  background: var(--primary);
+  color: white;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-top: 10px;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.btn-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.auth-footer a {
+  text-decoration: none;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 30px;
+  }
+}
+</style>
+
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h2>Login</h2>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <!-- Autofill blocker -->
+      <input type="text" name="fake_user" style="display:none">
+      <input type="password" name="fake_pass" style="display:none">
+
+      <div class="form-group">
+        <label>Username</label>
+        <input 
+          type="text" 
+          name="username" 
+          autocomplete="username" 
+          required>
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input 
+          type="password" 
+          name="password" 
+          autocomplete="current-password" 
+          required>
+      </div>
+
+      <button type="submit" class="btn-submit">Login</button>
+    </form>
+
+    <div class="auth-footer">
+      Don't have an account?
+      <a href="/accounts/signup/">Sign up</a>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
- 

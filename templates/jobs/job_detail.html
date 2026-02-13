@@ -3,240 +3,263 @@
 {% block content %}
 
 <style>
-.job-wrapper {
+.job-detail-wrapper {
     display: flex;
-    min-height: 85vh;
-    border-radius: 12px;
-    overflow: hidden;
+    gap: 40px;
 }
 
 .job-left {
-    background: #2C3E50;
-    color: white;
+    flex: 2;
+    background: white;
     padding: 40px;
-    width: 55%;
-    position: relative;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
 }
 
 .job-right {
-    width: 45%;
-    background: #f8f9fa;
+    flex: 1;
+    position: sticky;
+    top: 100px;
+}
+
+.company-box {
     display: flex;
-    flex-direction: column;
+    gap: 25px;
+    align-items: center;
 }
 
-.diagonal-divider {
-    position: absolute;
-    top: 0;
-    right: -50px;
-    width: 100px;
-    height: 100%;
-    background: white;
-    transform: skewX(-15deg);
+.company-logo {
+    width: 140px;
+    height: 140px;
+    border-radius: 20px;
+    object-fit: cover;
+    border: 1px solid #E5E7EB;
 }
 
-.job-hero {
-    height: 220px;
-    background-size: cover;
-    background-position: center;
+.section-title {
+    font-weight: 600;
+    margin-bottom: 20px;
+    font-size: 18px;
 }
 
-.form-card {
+.form-container {
     background: white;
     padding: 30px;
-    border-radius: 12px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    margin: -60px 30px 30px 30px;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+
+.form-label {
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .form-control {
+    height: 44px;
     border-radius: 8px;
+    border: 1px solid #E5E7EB;
 }
 
 .form-control:focus {
-    border-color: #2196F3;
-    box-shadow: 0 0 0 2px rgba(33,150,243,0.2);
+    border-color: #2563EB;
+    box-shadow: 0 0 0 2px rgba(37,99,235,0.2);
 }
 
 .required-star {
     color: red;
 }
 
-.upload-box {
-    border: 2px dashed #ccc;
-    padding: 20px;
-    text-align: center;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.3s;
+.apply-btn {
+    background: #2563EB;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    width: 100%;
+    transition: 0.2s ease;
 }
 
-.upload-box:hover {
-    background: #f1f1f1;
+.apply-btn:hover {
+    background: #1E40AF;
+    transform: translateY(-2px);
 }
 
-.tab-link {
-    color: #ccc;
-    margin-right: 20px;
-    cursor: pointer;
+.meta-box {
+    margin-top: 30px;
+    display: flex;
+    gap: 60px;
+    font-size: 14px;
 }
 
-.tab-link.active {
-    color: #2196F3;
-    border-bottom: 2px solid #2196F3;
-    padding-bottom: 5px;
+.meta-box small {
+    color: #6B7280;
+    display: block;
 }
 
 @media(max-width: 991px){
-    .job-wrapper {
+    .job-detail-wrapper {
         flex-direction: column;
     }
-    .job-left, .job-right {
-        width: 100%;
+    .job-right {
+        position: static;
     }
 }
 </style>
 
-<div class="job-wrapper">
+<div class="job-detail-wrapper">
 
     <!-- LEFT SECTION -->
     <div class="job-left">
 
-        <div class="diagonal-divider"></div>
+        <!-- Company + Logo -->
+        <div class="company-box">
 
-        <!-- Breadcrumb -->
-        <small class="text-light">
-            Working here / {{ job.branches }} / {{ job.title }}
-        </small>
+            {% if job.image %}
+                <img src="{{ job.image.url }}" class="company-logo">
+            {% else %}
+                <img src="{% static 'images/default.png' %}" class="company-logo">
+            {% endif %}
 
-        <h2 class="mt-3">{{ job.title }}</h2>
-
-        <p class="mt-3">
-            {{ job.description }}
-        </p>
-
-        <div class="mt-4">
-            <a href="#apply-form" class="btn btn-primary me-2">Apply Now</a>
-            <button class="btn btn-outline-light">Recommend</button>
+            <div>
+                <h3>{{ job.company_name }}</h3>
+                <h5 class="mt-2 text-muted">{{ job.title }}</h5>
+                <p class="mt-2"><strong>Eligible Branches:</strong> {{ job.allowed_branches }}</p>
+            </div>
         </div>
 
-        <hr class="my-4 text-light">
+        <hr class="my-4">
+
+        <!-- Job Description -->
+        <div>
+            <div class="section-title">Job Description</div>
+            <p>{{ job.description }}</p>
+        </div>
 
         <!-- Metadata -->
-        <div class="d-flex justify-content-between text-light">
-
+        <div class="meta-box">
             <div>
-                <i class="bi bi-building"></i><br>
-                <small>Department</small><br>
-                {{ job.branches }}
+                <small>Posted On</small>
+                {{ job.created_at|date:"d M Y" }}
             </div>
 
             <div>
-                <i class="bi bi-geo-alt"></i><br>
-                <small>Location</small><br>
-                India
+                <small>Application Deadline</small>
+                {{ job.application_deadline|date:"d M Y H:i" }}
             </div>
 
             <div>
-                <i class="bi bi-cash"></i><br>
-                <small>Salary</small><br>
-                As per company norms
+                <small>Salary</small>
+                {% if job.ctc %}
+                    {{ job.ctc }} LPA
+                {% else %}
+                    As per company norms
+                {% endif %}
             </div>
-
-        </div>
-
-        <hr class="my-4 text-light">
-
-        <!-- Tabs -->
-        <div>
-            <span class="tab-link active">Role details</span>
-            <span class="tab-link">Our mission</span>
-            <span class="tab-link">Office</span>
-            <span class="tab-link">Culture</span>
-        </div>
-
-        <div class="mt-4">
-
-            <small class="text-secondary">POSITION</small>
-            <p>{{ job.title }}</p>
-
-            <small class="text-secondary">EMPLOYMENT</small>
-            <p>In-house or remote</p>
-
-            <small class="text-secondary">YOUR MISSION</small>
-            <p>{{ job.description }}</p>
-
-            <small class="text-secondary">HERE'S HOW YOU'LL BE CONTRIBUTING</small>
-            <ul>
-                <li>Work on real projects</li>
-                <li>Collaborate with team</li>
-                <li>Deliver scalable solutions</li>
-            </ul>
-
         </div>
 
     </div>
 
-    <!-- RIGHT SECTION -->
+    <!-- RIGHT SECTION - APPLICATION FORM -->
     <div class="job-right">
 
-        <!-- Hero Image -->
-        <div class="job-hero"
-          <div class="job-hero"
-     style="background-image: url('{{ STATIC_URL }}images/office.jpg');">
-</div>
+    <div class="form-container">
 
-        </div>
+        {% if already_applied %}
 
-        <!-- Application Form -->
-        <div id="apply-form" class="form-card">
+            <h5 class="section-title text-success">Application Submitted</h5>
+            <p class="text-muted mb-3">
+                You have already applied for this position.
+            </p>
 
-            <h4>Ready to apply?</h4>
-            <p class="text-muted">Fill in the details below to apply.</p>
+            <!-- Selection Status Card -->
+            <div class="border rounded p-3 mt-3">
 
-            <form method="POST" enctype="multipart/form-data">
+                <h6>Application Status</h6>
+
+                {% if application.status == "SELECTED" %}
+                    <div class="alert alert-success mt-2">
+                        Congratulations! You are selected.
+                    </div>
+
+                {% elif application.status == "REJECTED" %}
+                    <div class="alert alert-danger mt-2">
+                        You were not selected.
+                    </div>
+
+                {% else %}
+                    <div class="alert alert-warning mt-2">
+                        {{ application.status|default:"Under Review" }}
+                    </div>
+                {% endif %}
+
+            </div>
+
+        {% else %}
+
+            <h5 class="section-title">Ready to apply?</h5>
+            <p class="text-muted mb-4">Fill in the details below.</p>
+
+            <form method="POST"
+                  action="{% url 'apply_job' job.id %}"
+                  enctype="multipart/form-data">
+
                 {% csrf_token %}
 
+                {% for field in fields %}
                 <div class="mb-3">
-                    <label>Name <span class="required-star">*</span></label>
-                    <input type="text" name="applicant_name" class="form-control" required>
-                </div>
+                    <label class="form-label">
+                        {{ field.field_name }}
+                        <span class="required-star">*</span>
+                    </label>
 
-                <div class="mb-3">
-                    <label>Email <span class="required-star">*</span></label>
-                    <input type="email" name="applicant_email" class="form-control" required>
-                </div>
+                    {% if field.field_type == "text" %}
+                        <input type="text"
+                               name="{{ field.field_name }}"
+                               class="form-control"
+                               required>
 
-                <div class="mb-3">
-                    <label>Phone <span class="required-star">*</span></label>
-                    <input type="tel" name="applicant_phone" class="form-control" required>
-                </div>
+                    {% elif field.field_type == "number" %}
+                        <input type="number"
+                               name="{{ field.field_name }}"
+                               class="form-control"
+                               required>
 
-                <div class="mb-3">
-                    <label>Upload CV <span class="required-star">*</span></label>
-                    <div class="upload-box">
-                        <i class="bi bi-cloud-upload"></i>
-                        <p class="mb-1">Drop file or click to upload</p>
-                        <small class="text-muted">Max size: 5MB</small>
+                    {% elif field.field_type == "percentage" %}
+                        <input type="number"
+                               step="0.01"
+                               name="{{ field.field_name }}"
+                               class="form-control"
+                               required>
+
+                    {% elif field.field_type == "file" %}
                         <input type="file"
-                               name="applicant_cv"
-                               accept=".pdf,.doc,.docx"
-                               required
-                               class="form-control mt-2">
-                    </div>
-                </div>
+                               name="{{ field.field_name }}"
+                               class="form-control"
+                               required>
 
-                <button type="submit"
-                        class="btn w-100"
-                        style="background:#00A878; color:white;">
+                    {% elif field.field_type == "multiple_file" %}
+                        <input type="file"
+                               name="{{ field.field_name }}"
+                               multiple
+                               class="form-control"
+                               required>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <button type="submit" class="apply-btn">
                     Apply Now
                 </button>
 
             </form>
 
-        </div>
+        {% endif %}
 
     </div>
+
+</div>
+
 
 </div>
 

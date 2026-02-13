@@ -108,7 +108,11 @@
 
             <div class="mb-3">
                 <label class="form-label">Company Logo <span class="required-star">*</span></label>
-                <input type="file" name="company_logo" class="form-control" accept="image/*" required>
+                <input type="file" name="company_logo"
+       id="logoInput"
+       class="form-control"
+       accept="image/*" required>
+
             </div>
             <div class="mb-3">
                 <label class="form-label">Eligible Branches</label>
@@ -120,6 +124,17 @@
                 <label class="form-label">Posting Date <span class="required-star">*</span></label>
                 <input type="date" name="posting_date" class="form-control" required>
             </div>
+            
+
+            <!-- duration -->
+             <div class="mb-4">
+    <label class="form-label">
+        Application Deadline <span class="required-star">*</span>
+    </label>
+    <input type="datetime-local" name="application_deadline"
+           id="deadlineInput"
+           class="form-control" required>
+</div>
 
             <!-- Job Details -->
             <div class="section-title">Job Details</div>
@@ -145,6 +160,18 @@
             <input type="text" id="tagInput" class="form-control mb-2" placeholder="Type and press Enter">
             <div id="tagContainer"></div>
             <input type="hidden" name="job_tags" id="hiddenTags">
+
+            <!-- Student Custom Fields -->
+<div class="section-title mt-4">Student Application Fields</div>
+
+<div id="customFieldsContainer"></div>
+
+<button type="button"
+        onclick="addField()"
+        class="btn btn-outline-primary mt-2">
+    + Add Field
+</button>
+
 
             <!-- Salary -->
             <div class="section-title mt-4">Salary</div>
@@ -192,6 +219,9 @@
         <h5>Card Preview</h5>
 
         <div id="previewCard" class="preview-card" style="background:#FFE4D6;">
+            <img id="previewLogo"
+     style="width:60px;height:60px;border-radius:12px;margin-bottom:10px;">
+
             <small id="previewDate">Today</small>
             <h6 id="previewCompany" class="mt-2">Company Name</h6>
             <h4 id="previewTitle">Job Title</h4>
@@ -199,6 +229,7 @@
             <div class="mt-3">
                 <strong id="previewSalary">250/hr</strong>
             </div>
+            <small id="previewDeadline">Deadline: --</small>
         </div>
 
     </div>
@@ -210,6 +241,45 @@
 document.getElementById("titleInput").addEventListener("input", function(){
     document.getElementById("previewTitle").innerText = this.value;
 });
+
+
+document.getElementById("deadlineInput").addEventListener("input", function(){
+    document.getElementById("previewDeadline").innerText =
+        "Deadline: " + this.value;
+});
+
+//live logo preview in preview card
+// Company name preview
+document.querySelector("[name='company_name']")
+.addEventListener("input", function(){
+    document.getElementById("previewCompany").innerText = this.value;
+});
+
+// Salary preview
+document.querySelector("[name='salary_amount']")
+.addEventListener("input", updateSalary);
+
+document.querySelector("[name='salary_period']")
+.addEventListener("change", updateSalary);
+
+function updateSalary(){
+    let amount = document.querySelector("[name='salary_amount']").value;
+    let period = document.querySelector("[name='salary_period']").value;
+    document.getElementById("previewSalary").innerText =
+        amount + "/" + period;
+}
+
+// Image preview
+document.getElementById("logoInput")
+.addEventListener("change", function(e){
+
+    let reader = new FileReader();
+    reader.onload = function(){
+        document.getElementById("previewLogo").src = reader.result;
+    }
+    reader.readAsDataURL(e.target.files[0]);
+});
+
 
 // Tag system
 let tags = [];
@@ -253,6 +323,33 @@ document.querySelectorAll(".color-swatch").forEach(swatch => {
         document.getElementById("previewCard").style.background = this.dataset.color;
     });
 });
+function addField(){
+    let container = document.getElementById("customFieldsContainer");
+
+    container.innerHTML += `
+        <div class="mb-3 custom-field border p-3 rounded">
+            <input type="text"
+                   name="field_label[]"
+                   placeholder="Field Label"
+                   class="form-control mb-2">
+
+            <select name="field_type[]" class="form-select mb-2">
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+                <option value="percentage">Percentage</option>
+                <option value="file">File</option>
+                <option value="multiple_file">Multiple Files</option>
+            </select>
+
+            <button type="button"
+                onclick="this.parentElement.remove()"
+                class="btn btn-sm btn-danger">
+                Remove
+            </button>
+        </div>
+    `;
+}
+
 </script>
 
 {% endblock %}

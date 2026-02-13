@@ -1,13 +1,376 @@
 {% extends 'base.html' %}
-
 {% block content %}
-<h3>Welcome to Placement Portal</h3>
-<a href="/accounts/login/">Login</a> |
-<a href="/accounts/signup/">Student Signup</a>
-{% for note in notifications %}
-<div style="background:yellow;padding:10px;">
-    {{ note.message }}
+
+<style>
+:root {
+  --background: hsl(209, 40%, 96%);
+  --foreground: hsl(222, 47%, 11%);
+  --primary: hsl(216, 19%, 26%);
+  --accent: hsl(210, 40%, 96%);
+  --accent-foreground: hsl(215, 16%, 46%);
+  --border: hsl(212, 26%, 83%);
+  --card: hsl(210, 40%, 98%);
+  --muted: hsl(215, 20%, 65%);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  margin: 0;
+}
+
+.container {
+  max-width: 1280px;
+  margin: auto;
+  padding: 0 20px;
+}
+
+section { padding: 100px 0; }
+
+/* NAVBAR */
+nav {
+  position: sticky;
+  top: 0;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  z-index: 1000;
+}
+
+.nav-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 70px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.logo i { margin-right: 8px; }
+
+.nav-buttons a {
+  text-decoration: none;
+  margin-left: 16px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  transition: 0.3s ease;
+}
+
+.btn-primary { background: var(--primary); color: white; }
+.btn-outline { border: 1px solid var(--border); }
+
+/* BANNER */
+.banner {
+  background: #f1f5f9;
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  height: 45px;
+  display: flex;
+  align-items: center;
+}
+
+.banner-wrapper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.banner-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 40s linear infinite;
+}
+
+.banner-item {
+  margin-right: 60px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--primary);
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* HERO */
+.hero {
+  text-align: center;
+  padding: 120px 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.hero-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: var(--accent);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.hero h1 { font-size: 60px; margin-bottom: 24px; }
+.hero p { font-size: 20px; color: var(--accent-foreground); margin-bottom: 32px; }
+
+/* NOTIFICATIONS */
+.notification-bar {
+  background: #ffffff;
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  border-radius: 8px;
+  margin: 16px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+
+.notification-bar button {
+  border: none;
+  background: none;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/*hero*/
+.hero-buttons {
+  margin-top: 30px;
+}
+
+.btn-solid {
+  background: #111827;
+  color: white;
+  padding: 14px 32px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-right: 16px;
+  transition: all 0.25s ease;
+  display: inline-block;
+}
+
+.btn-solid:hover {
+  background: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+}
+
+.btn-ghost-modern {
+  border: 1px solid var(--border);
+  color: var(--foreground);
+  padding: 14px 32px;
+  border-radius: 10px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.25s ease;
+  display: inline-block;
+}
+
+.btn-ghost-modern:hover {
+  background: #ffffff;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+
+/* SUCCESS STORIES */
+.gallery { overflow: hidden; }
+
+.carousel-track {
+  display: flex;
+  gap: 24px;
+  animation: scroll-left 70s linear infinite;
+}
+
+.carousel-track:hover { animation-play-state: paused; }
+
+.student-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  padding: 24px;
+  border-radius: 16px;
+  min-width: 260px;
+  text-align: center;
+  transition: 0.3s;
+}
+
+.student-card img {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  margin-bottom: 12px;
+}
+
+@keyframes scroll-left {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* FEATURES */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px,1fr));
+  gap: 24px;
+}
+
+.feature-card {
+  background: var(--card);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  transition: 0.3s;
+}
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 30px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--muted);
+}
+</style>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="container nav-inner">
+    <div class="logo">
+      <i data-lucide="graduation-cap"></i>
+      PlacementZone
+    </div>
+    <div class="nav-buttons">
+      <a href="/accounts/login/" class="btn-outline">Login</a>
+      <a href="/accounts/signup/" class="btn-primary">Sign Up</a>
+    </div>
+  </div>
+</nav>
+
+<!-- SCROLLING BANNER -->
+{% if announcements %}
+<div class="banner">
+  <div class="banner-wrapper">
+    <div class="banner-track">
+      {% for announcement in announcements %}
+        <span class="banner-item">🚀 {{ announcement.message }}</span>
+      {% endfor %}
+      {% for announcement in announcements %}
+        <span class="banner-item">🚀 {{ announcement.message }}</span>
+      {% endfor %}
+    </div>
+  </div>
 </div>
-{% endfor %}
+{% endif %}
+
+
+<!-- NOTIFICATIONS -->
+<div class="container">
+{% if notifications %}
+  {% for note in notifications %}
+    <div class="notification-bar">
+      <span>{{ note.message }}</span>
+      <button onclick="this.parentElement.remove()">×</button>
+    </div>
+  {% endfor %}
+{% endif %}
+</div>
+
+<!-- HERO -->
+{% if settings and settings.hero_background %}
+<section class="hero" style="background-image:url('{{ settings.hero_background.url }}')">
+{% else %}
+<section class="hero">
+{% endif %}
+  <div class="container">
+    
+    <h1>Your career starts here.</h1>
+    <p>
+      A single platform connecting students and placement cells —
+      making campus hiring seamless.
+    </p>
+    <div class="hero-buttons">
+  <a href="/accounts/signup/" class="btn-solid">
+    Student Sign Up
+  </a>
+  <a href="/accounts/login/" class="btn-ghost-modern">
+    Login
+  </a>
+</div>
+  </div>
+</section>
+
+<!-- SUCCESS STORIES -->
+{% if stories %}
+<section class="gallery">
+  <div class="container">
+    <h2 style="text-align:center;margin-bottom:40px;">Meet Our Placed Students</h2>
+    <div class="carousel-track">
+      {% for story in stories %}
+      <div class="student-card">
+        <img src="{{ story.photo.url }}" alt="{{ story.name }}">
+        <h4>{{ story.name }}</h4>
+        <p>{{ story.company }} — {{ story.package }}</p>
+        <small>{{ story.graduation_year }}</small>
+      </div>
+      {% endfor %}
+      {% for story in stories %}
+      <div class="student-card">
+        <img src="{{ story.photo.url }}" alt="{{ story.name }}">
+        <h4>{{ story.name }}</h4>
+        <p>{{ story.company }} — {{ story.package }}</p>
+        <small>{{ story.graduation_year }}</small>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- FEATURES -->
+<section>
+  <div class="container">
+    <h2 style="text-align:center;margin-bottom:40px;">Platform Features</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <i data-lucide="briefcase"></i>
+        <h3>Job Listings</h3>
+        <p>Browse curated campus opportunities.</p>
+      </div>
+      <div class="feature-card">
+        <i data-lucide="users"></i>
+        <h3>Company Connects</h3>
+        <p>Engage directly with recruiters.</p>
+      </div>
+      <div class="feature-card">
+        <i data-lucide="trending-up"></i>
+        <h3>Track Progress</h3>
+        <p>Monitor your application journey.</p>
+      </div>
+      <div class="feature-card">
+        <i data-lucide="shield"></i>
+        <h3>Verified Profiles</h3>
+        <p>Secure and trusted student records.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © 2026 PlaceHub · Built for campus placements
+</footer>
+
+<script>
+lucide.createIcons();
+</script>
 
 {% endblock %}

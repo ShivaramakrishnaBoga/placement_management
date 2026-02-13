@@ -1,9 +1,16 @@
 from django.contrib import admin
-from .models import Job, ApplicationField, Application, ApplicationResponse
-from .models import Notification
+from .models import JobDrive, ApplicationField, Application, ApplicationResponse, Offer
 
-admin.site.register(Job)
-admin.site.register(ApplicationField)
+class ApplicationFieldInline(admin.TabularInline):
+    model = ApplicationField
+    extra = 1
+
+class JobDriveAdmin(admin.ModelAdmin):
+    inlines = [ApplicationFieldInline]
+    list_display = ('title', 'company_name', 'status', 'created_at')
+    list_filter = ('status', 'company_name')
+
+admin.site.register(JobDrive, JobDriveAdmin)
 admin.site.register(Application)
 admin.site.register(ApplicationResponse)
-admin.site.register(Notification)
+admin.site.register(Offer)

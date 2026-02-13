@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from jobs.models import Job, Application
+from jobs.models import JobDrive as Job, Application
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from accounts.models import User
@@ -148,24 +148,34 @@ def delete_officer(request, user_id):
 
 
 
+from jobs.models import JobDrive as Job, Application
+
 @login_required
 def officer_dashboard(request):
 
     jobs = Job.objects.filter(created_by=request.user)
 
-    applications = Application.objects.filter(job__in=jobs)
+    total = Application.objects.filter(
+        job__created_by=request.user
+    ).count()
 
-    total = applications.count()
-    selected = applications.filter(status='Selected').count()
-    rejected = applications.filter(status='Rejected').count()
+    selected = Application.objects.filter(
+        job__created_by=request.user,
+        status="Selected"
+    ).count()
+
+    rejected = Application.objects.filter(
+        job__created_by=request.user,
+        status="Rejected"
+    ).count()
 
     return render(request, 'dashboard/officer_dashboard.html', {
         'jobs': jobs,
-        'applications': applications,
         'total': total,
         'selected': selected,
-        'rejected': rejected
+        'rejected': rejected,
     })
+
 
 
 

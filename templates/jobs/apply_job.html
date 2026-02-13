@@ -1,27 +1,33 @@
-{% extends 'base.html' %}
-{% block content %}
-
-<h3>Apply for {{ job.title }}</h3>
-
-<form method="POST">
+<form method="POST" autocomplete="off">
     {% csrf_token %}
+
+    <!-- Prevent Chrome Autofill -->
+    <input type="text" name="fake_username" style="display:none">
+    <input type="password" name="fake_password" style="display:none">
 
     {% for field in fields %}
         <label>{{ field.field_name }}</label><br>
 
         {% if field.field_type == 'text' %}
-            <input type="text" name="{{ field.field_name }}"><br><br>
+            <input type="text"
+                   name="{{ field.field_name }}"
+                   autocomplete="new-password"
+                   autocorrect="off"
+                   autocapitalize="off"
+                   spellcheck="false"><br><br>
 
         {% elif field.field_type == 'number' %}
-            <input type="number" name="{{ field.field_name }}"><br><br>
+            <input type="number"
+                   name="{{ field.field_name }}"
+                   autocomplete="off"><br><br>
 
         {% elif field.field_type == 'file' %}
-            <input type="file" name="{{ field.field_name }}"><br><br>
+            <input type="file"
+                   name="{{ field.field_name }}"
+                   autocomplete="off"><br><br>
 
         {% endif %}
     {% endfor %}
 
     <button type="submit">Submit Application</button>
 </form>
-
-{% endblock %}

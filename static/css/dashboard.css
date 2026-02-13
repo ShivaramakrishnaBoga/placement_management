@@ -29,3 +29,47 @@ body {
 .shadow-soft {
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
+
+/* ============================= */
+/* Modern Form Styling */
+/* ============================= */
+
+/* Page Background */
+body {
+    background-color: #f8f9fa;
+}
+
+/* Card Styling */
+.card {
+    border-radius: 16px;
+    background: #ffffff;
+    transition: 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* Form Inputs */
+.form-control {
+    height: 45px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+/* Button Styling */
+.btn-primary {
+    height: 45px;
+    font-weight: 500;
+    border-radius: 10px;
+}
+
+/* Back Button */
+.btn-light {
+    border-radius: 8px;
+}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Job
+from .models import JobDrive as Job
 
 class JobForm(forms.ModelForm):
     class Meta:

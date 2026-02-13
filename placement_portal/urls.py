@@ -19,7 +19,8 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.shortcuts import render
-from jobs.models import Notification
+from core.models import Notification
+
 def landing(request):
     notifications = Notification.objects.all().order_by('-created_at')[:1]
     return render(request, 'landing.html', {'notifications': notifications})
@@ -30,6 +31,7 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('jobs/', include('jobs.urls')),
     path('dashboard/', include('dashboard.urls')),
+    path('api/', include('placement_portal.api_urls')),
 ]
 
 if settings.DEBUG:
