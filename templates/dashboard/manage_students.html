@@ -25,15 +25,15 @@
         <tbody>
             {% for s in students %}
             <tr>
-                <td>{{ s.username }}</td>
-                <td>{{ s.email }}</td>
+                <td>{{ s.user.username }}</td>
+                <td>{{ s.user.email }}</td>
                 <td>{{ s.roll_number }}</td>
                 <td>{{ s.branch }}</td>
                 <td>
-                    <a href="/dashboard/edit-student/{{ s.id }}/" class="btn btn-sm btn-warning">
+                    <a href="/dashboard/edit-student/{{ s.user.id }}/" class="btn btn-sm btn-warning">
                         Edit
                     </a>
-                    <a href="/dashboard/delete-student/{{ s.id }}/"
+                    <a href="/dashboard/delete-student/{{ s.user.id }}/"
                        class="btn btn-sm btn-danger"
                        onclick="return confirm('Delete this student?')">
                        Delete

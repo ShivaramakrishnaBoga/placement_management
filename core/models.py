@@ -1,10 +1,11 @@
 from django.db import models
 from django.conf import settings
+from jobs.models import JobDrive
 
 class AuditLog(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
     action = models.CharField(max_length=255)
-    details = models.JSONField(blank=True, null=True)  # Store details as JSON for flexibility
+    details = models.JSONField(blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
     ip_address = models.GenericIPAddressField(null=True, blank=True)
 
@@ -45,3 +46,36 @@ class PlacementPolicy(models.Model):
 
     def __str__(self):
         return f"Policy for Year {self.active_year}"
+
+class GuidanceContent(models.Model):
+    RESOURCE_TYPES = [
+        ("LINK", "Link"),
+        ("PDF", "PDF"),
+        ("VIDEO", "Video"),
+        ("TEXT", "Text"),
+    ]
+
+    job = models.ForeignKey(JobDrive, on_delete=models.CASCADE)
+    round_name = models.CharField(max_length=200)
+    title = models.CharField(max_length=255)
+    resource_type = models.CharField(max_length=20, choices=RESOURCE_TYPES)
+    file = models.FileField(upload_to="guidance_files/", null=True, blank=True)
+    link = models.URLField(null=True, blank=True)
+    description = models.TextField(blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+class StudentRoundStatus(models.Model):
+    STATUS_CHOICES = [
+        ("PENDING", "Pending"),
+        ("CLEARED", "Cleared"),
+        ("FAILED", "Failed"),
+    ]
+
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    job = models.ForeignKey(JobDrive, on_delete=models.CASCADE)
+    round_name = models.CharField(max_length=200)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING")
+    updated_at = models.DateTimeField(auto_now=True)
+

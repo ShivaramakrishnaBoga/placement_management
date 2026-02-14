@@ -16,4 +16,8 @@ urlpatterns = [
     path('edit-officer/<int:user_id>/', views.edit_officer, name='edit_officer'),
     path('delete-officer/<int:user_id>/', views.delete_officer, name='delete_officer'),
 
+    path('upload-academic-master/', views.upload_academic_master, name='upload_academic_master'),
+    path('students/', views.student_list, name='student_list'),
+    path('profile/', views.student_profile, name='student_profile'),
+    path('my-applications/', views.my_applications, name='my_applications'),
 ]

@@ -3,17 +3,26 @@ from django.conf import settings
 from django.utils import timezone
 
 class JobDrive(models.Model):
+    STATUS_CHOICES = [
+        ('OPEN', 'Open'),
+        ('UPCOMING', 'Upcoming'),
+        ('IN_PROGRESS', 'In Progress'),
+        ('CLOSED', 'Closed'),
+    ]
+
     CATEGORY_CHOICES = (
         ('NORMAL', 'Normal'),
         ('DREAM', 'Dream'),
         ('SUPER_DREAM', 'Super Dream'),
     )
-    
-    STATUS_CHOICES = (
-        ('DRAFT', 'Draft'),
-        ('OPEN', 'Open'),
-        ('frozen', 'Frozen'), # Use lowercase if specific, but uppercase is standard
-        ('CLOSED', 'Closed'),
+
+    BRANCH_CHOICES = (
+        ('CSE', 'CSE'),
+        ('ECE', 'ECE'),
+        ('EEE', 'EEE'),
+        ('MECH', 'MECH'),
+        ('CIVIL', 'CIVIL'),
+        ('IT', 'IT'),
     )
 
     # Basic Info
@@ -22,9 +31,13 @@ class JobDrive(models.Model):
     description = models.TextField()
     
     # Eligibility Criteria
-    min_cgpa = models.DecimalField(max_digits=4, decimal_places=2, default=0.0)
-    allowed_branches = models.CharField(max_length=500, help_text="Comma-separated list of branches (e.g., CSE,ECE)")
-    max_backlogs = models.IntegerField(default=0)
+    min_cgpa = models.FloatField(blank=True, null=True)
+    max_backlogs = models.IntegerField(blank=True, null=True)
+    cgpa_required = models.BooleanField(default=False)
+    backlogs_required = models.BooleanField(default=False)
+    eligible_branches = models.CharField(max_length=500, help_text="Comma-separated branches e.g. CSE,ECE", default="All")
+
+    # Other eligibility
     eligible_batches = models.CharField(max_length=200, help_text="Comma-separated years (e.g., 2024,2025)", default="2024")
 
     # Offer Details
@@ -32,10 +45,14 @@ class JobDrive(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='NORMAL')
     
     # Meta
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        limit_choices_to={'role': 'OFFICER'}
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     application_deadline = models.DateTimeField(blank=True, null=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='DRAFT')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='OPEN')
     
     # Optional Visuals
     image = models.ImageField(upload_to='job_images/', blank=True, null=True)
@@ -66,13 +83,12 @@ class Application(models.Model):
     STATUS_CHOICES = (
         ('APPLIED', 'Applied'),
         ('SHORTLISTED', 'Shortlisted'),
-        ('INTERVIEWED', 'Interviewed'),
         ('SELECTED', 'Selected'),
         ('REJECTED', 'Rejected'),   
     )
 
     job = models.ForeignKey(JobDrive, on_delete=models.CASCADE, related_name='applications')
-    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) # Link to User, but logically StudentProfile
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
     applied_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='APPLIED')
     current_round = models.CharField(max_length=100, blank=True, default="Screening")

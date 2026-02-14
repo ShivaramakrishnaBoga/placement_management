@@ -4,6 +4,10 @@ from .models import JobDrive, ApplicationField, Application, ApplicationResponse
 from django.http import HttpResponse
 from django.utils import timezone
 import openpyxl
+from core.services.eligibility_service import check_student_eligibility
+from django.contrib import messages
+from students.models import StudentProfile
+from core.models import GuidanceContent, StudentRoundStatus
 
 
 # ==============================
@@ -21,10 +25,12 @@ def create_job(request):
             company_name=request.POST.get('company_name'),
             title=request.POST.get('title'),
             description=request.POST.get('description'),
-            allowed_branches=request.POST.get('branches'),
+            eligible_branches=request.POST.get('branches'),
+            min_cgpa=request.POST.get('min_cgpa') or None,
+            max_backlogs=request.POST.get('max_backlogs') or None,
+            cgpa_required=request.POST.get('cgpa_required') == 'on',
+            backlogs_required=request.POST.get('backlogs_required') == 'on',
             ctc=request.POST.get('salary_amount') or 0,
-            # salary_period=request.POST.get('salary_period'), # Removed in model update
-            # job_tags=request.POST.get('job_tags'), # Removed
             card_color=request.POST.get('card_color'),
             image=request.FILES.get('company_logo'),
             application_deadline=request.POST.get('application_deadline'),
@@ -58,27 +64,54 @@ from .models import JobDrive, Application
 @login_required
 def job_list(request):
 
-    jobs = JobDrive.objects.all()
+    jobs = JobDrive.objects.filter(status="OPEN")
 
-    # Add applied status info for students
-    if request.user.role == "STUDENT":
-        student_applications = Application.objects.filter(
-            student=request.user
-        )
+    profile = getattr(request.user, "student_profile", None)
 
-        applied_job_ids = student_applications.values_list(
-            'job_id',
-            flat=True
-        )
+    # Get filter params
+    selected_branch = request.GET.get("branch")
+    eligibility_filter = request.GET.get("eligibility")
 
-    else:
-        applied_job_ids = []
+    # Branch filter
+    if selected_branch and selected_branch != "all":
+        jobs = jobs.filter(eligible_branches__icontains=selected_branch)
 
-    return render(request, 'jobs/job_list.html', {
-        'jobs': jobs,
-        'applied_job_ids': applied_job_ids,
-        'now': timezone.now()
-    })
+    jobs_with_data = []
+
+    for job in jobs:
+        eligibility = check_student_eligibility(profile, job)
+
+        # Eligibility filter
+        if eligibility_filter == "eligible" and not eligibility["eligible"]:
+            continue
+        if eligibility_filter == "not_eligible" and eligibility["eligible"]:
+            continue
+            
+        is_applied = False
+        if request.user.role == "STUDENT":
+             is_applied = Application.objects.filter(job=job, student=request.user).exists()
+
+        jobs_with_data.append({
+            "job": job,
+            "eligibility": eligibility,
+            "is_applied": is_applied
+        })
+
+    # Get unique branches dynamically
+    branch_list = set()
+    for job in JobDrive.objects.all():
+        if job.eligible_branches:
+            for b in job.eligible_branches.split(","):
+                branch_list.add(b.strip())
+
+    context = {
+        "jobs_with_data": jobs_with_data,
+        "branch_list": sorted(branch_list),
+        "selected_branch": selected_branch,
+        "eligibility_filter": eligibility_filter,
+    }
+
+    return render(request, "jobs/job_list.html", context)
 
 
 
@@ -90,8 +123,13 @@ def job_detail(request, job_id):
 
     job = get_object_or_404(JobDrive, id=job_id)
     already_applied = False
+    
+    eligibility = {"eligible": True, "reasons": []}
+    profile = getattr(request.user, "student_profile", None)
 
     if request.user.role == 'STUDENT':
+        
+        eligibility = check_student_eligibility(profile, job)
 
         # Check for existing application
         is_applied = Application.objects.filter(job=job, student=request.user).exists()
@@ -102,12 +140,14 @@ def job_detail(request, job_id):
             if not application.viewed:
                 application.viewed = True
                 application.save()
-            already_applied = True # Logic changed slightly from original get_or_create which was weird
+            already_applied = True 
 
     context = {
         'job': job,
         'fields': job.fields.all(),
-        'already_applied': already_applied
+        'already_applied': already_applied,
+        'eligibility': eligibility,
+        'profile': profile
     }
     if already_applied:
          context['application'] = Application.objects.get(job=job, student=request.user)
@@ -128,6 +168,14 @@ def apply_job(request, job_id):
 
     if request.user.role != 'STUDENT':
         return redirect('landing')
+
+    # ELIGIBILITY CHECK
+    profile = getattr(request.user, "student_profile", None)
+    eligibility = check_student_eligibility(profile, job)
+
+    if not eligibility["eligible"]:
+        messages.error(request, "You are not eligible for this drive.")
+        return redirect("job_detail", job_id=job.id)
 
     if request.method == 'POST':
 
@@ -252,6 +300,140 @@ def export_student_responses(request, job_id):
         content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     response['Content-Disposition'] = f'{job.title}_dynamic_responses.xlsx'
+
+    workbook.save(response)
+    return response
+
+# ==============================
+# GUIDANCE SYSTEM
+# ==============================
+@login_required
+def guidance_list(request):
+    jobs = JobDrive.objects.all().order_by('-created_at')
+    return render(request, 'jobs/guidance_list.html', {'jobs': jobs})
+
+@login_required
+def create_guidance(request, job_id):
+    if request.user.role not in ["ADMIN", "OFFICER"]:
+        return redirect("student_dashboard")
+
+    job = get_object_or_404(JobDrive, id=job_id)
+
+    if request.method == "POST":
+        GuidanceContent.objects.create(
+            job=job,
+            round_name=request.POST.get("round_name"),
+            title=request.POST.get("title"),
+            resource_type=request.POST.get("resource_type"),
+            file=request.FILES.get("file"),
+            link=request.POST.get("link"),
+            description=request.POST.get("description"),
+            created_by=request.user,
+        )
+        return redirect("guidance_detail", job_id=job.id)
+
+    return render(request, "jobs/create_guidance.html", {"job": job})
+
+@login_required
+def guidance_detail(request, job_id):
+    job = get_object_or_404(JobDrive, id=job_id)
+    
+    guidance_contents = GuidanceContent.objects.filter(job=job).order_by('created_at')
+    
+    student_statuses = {}
+    if request.user.role == "STUDENT":
+        statuses = StudentRoundStatus.objects.filter(job=job, student=request.user)
+        for s in statuses:
+            student_statuses[s.round_name] = s.status
+
+    # Group by round
+    temp_grouped = {}
+    for item in guidance_contents:
+        if item.round_name not in temp_grouped:
+            temp_grouped[item.round_name] = []
+        temp_grouped[item.round_name].append(item)
+
+    # Convert to list of objects for template
+    final_guidance = []
+    # Sort rounds if needed, currently alphabetical or insertion order?
+    # Maybe use known rounds order if possible? 
+    # For now, just sort by name or keep insertion order from guidance creation.
+    # We can sort rounds by earliest created content in that round.
+    
+    # Sort rounds based on earliest created_at of content
+    rounds_order = []
+    seen = set()
+    for item in guidance_contents:
+        if item.round_name not in seen:
+            rounds_order.append(item.round_name)
+            seen.add(item.round_name)
+            
+    for round_name in rounds_order:
+        contents = temp_grouped[round_name]
+        status = student_statuses.get(round_name, "PENDING")
+        
+        final_guidance.append({
+            "round_name": round_name,
+            "contents": contents,
+            "status": status
+        })
+
+    return render(request, "jobs/guidance_detail.html", {
+        "job": job,
+        "grouped_guidance": final_guidance, # Renamed variable in template usage
+    })
+
+@login_required
+def update_round_status(request, job_id):
+    if request.user.role != "STUDENT":
+        return redirect("landing")
+
+    if request.method == "POST":
+        job = get_object_or_404(JobDrive, id=job_id)
+        round_name = request.POST.get("round_name")
+        status = request.POST.get("status")
+
+        StudentRoundStatus.objects.update_or_create(
+            student=request.user,
+            job=job,
+            round_name=round_name,
+            defaults={"status": status}
+        )
+        
+        return redirect("guidance_detail", job_id=job.id)
+    
+    return redirect("guidance_list")
+
+@login_required
+def export_job_guidance_data(request, job_id):
+
+    if request.user.role not in ["ADMIN", "OFFICER"]:
+        return redirect("student_dashboard")
+
+    job = get_object_or_404(JobDrive, id=job_id)
+
+    records = StudentRoundStatus.objects.filter(job=job)
+
+    workbook = openpyxl.Workbook()
+    sheet = workbook.active
+    sheet.title = "Guidance Data"
+
+    sheet.append(["Student", "Roll No", "Round", "Status"])
+
+    for record in records:
+        profile = getattr(record.student, 'student_profile', None)
+        roll = profile.roll_number if profile else record.student.username
+        sheet.append([
+            record.student.username,
+            roll,
+            record.round_name,
+            record.status,
+        ])
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename={job.title}_guidance.xlsx"
 
     workbook.save(response)
     return response

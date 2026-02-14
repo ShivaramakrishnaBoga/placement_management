@@ -1,0 +1,117 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block content %}
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">{{ job.company_name }}</h2>
+        <p class="text-muted mb-0">Placement Preparation Guide <span class="mx-2">•</span> {{ job.title }}</p>
+    </div>
+    <a href="{% url 'guidance_list' %}" class="btn btn-outline-secondary rounded-pill shadow-sm">
+        <i class="bi bi-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+{% for round_obj in grouped_guidance %}
+    <div class="card shadow-sm border-0 mb-5 rounded-4 overflow-hidden">
+        
+        <!-- Round Header -->
+        <div class="card-header bg-white py-3 px-4 d-flex justify-content-between align-items-center border-bottom">
+            <h5 class="mb-0 fw-bold text-dark">
+                <i class="bi bi-layers me-2 text-primary"></i> {{ round_obj.round_name }}
+            </h5>
+            
+            {% if request.user.role == "STUDENT" %}
+            <form method="POST" action="{% url 'update_round_status' job.id %}" class="d-flex align-items-center">
+                {% csrf_token %}
+                <input type="hidden" name="round_name" value="{{ round_obj.round_name }}">
+                
+                <span class="me-2 small text-muted fw-bold text-uppercase">Status:</span>
+                
+                <select name="status" class="form-select form-select-sm fw-bold 
+                       {% if round_obj.status == 'CLEARED' %}border-success text-success
+                       {% elif round_obj.status == 'FAILED' %}border-danger text-danger
+                       {% else %}border-secondary text-secondary{% endif %}"
+                       onchange="this.form.submit()" 
+                       style="width: 140px;">
+                    <option value="PENDING" {% if round_obj.status == "PENDING" %}selected{% endif %}>Pending</option>
+                    <option value="CLEARED" {% if round_obj.status == "CLEARED" %}selected{% endif %}>Cleared</option>
+                    <option value="FAILED" {% if round_obj.status == "FAILED" %}selected{% endif %}>Failed</option>
+                </select>
+            </form>
+            {% else %}
+               <span class="badge bg-light text-dark border">
+                   {{ round_obj.contents|length }} Resources
+               </span>
+            {% endif %}
+        </div>
+        
+        <!-- Resources List -->
+        <div class="card-body p-0">
+            <ul class="list-group list-group-flush">
+                {% for item in round_obj.contents %}
+                    <li class="list-group-item p-4 border-bottom-0 border-top">
+                        <div class="row align-items-center">
+                            
+                            <!-- Icon -->
+                            <div class="col-auto">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                    {% if item.resource_type == "VIDEO" %}
+                                        <i class="bi bi-play-fill fs-3 text-danger"></i>
+                                    {% elif item.resource_type == "PDF" %}
+                                        <i class="bi bi-file-earmark-pdf-fill fs-4 text-danger"></i>
+                                    {% elif item.resource_type == "LINK" %}
+                                        <i class="bi bi-link-45deg fs-2 text-primary"></i>
+                                    {% else %}
+                                        <i class="bi bi-file-text-fill fs-4 text-secondary"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Content -->
+                            <div class="col">
+                                <h6 class="fw-bold mb-1 text-dark">{{ item.title }}</h6>
+                                <p class="text-muted small mb-2 text-truncate" style="max-width: 600px;">
+                                    {{ item.description|truncatewords:25 }}
+                                </p>
+
+                                {% if item.resource_type == "VIDEO" and item.link %}
+                                    <div class="ratio ratio-16x9 shadow-sm rounded-3 mt-3 w-100 w-md-50">
+                                        <iframe src="{{ item.link }}" allowfullscreen></iframe>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="col-md-auto mt-3 mt-md-0">
+                                <div class="d-flex gap-2">
+                                    {% if item.file %}
+                                        <a href="{{ item.file.url }}" class="btn btn-outline-primary btn-sm rounded-pill px-3" target="_blank">
+                                            <i class="bi bi-download me-1"></i> Download
+                                        </a>
+                                    {% endif %}
+                                    {% if item.link and item.resource_type != "VIDEO" %}
+                                        <a href="{{ item.link }}" class="btn btn-outline-primary btn-sm rounded-pill px-3" target="_blank">
+                                            <i class="bi bi-box-arrow-up-right me-1"></i> Open
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% empty %}
+    <div class="text-center py-5">
+        <div class="mb-3">
+             <i class="bi bi-folder2-open display-1 text-muted opacity-25"></i>
+        </div>
+        <h4 class="text-muted">No guidance content available</h4>
+        <p class="text-secondary">Resources for this drive will be uploaded soon.</p>
+    </div>
+{% endfor %}
+
+{% endblock %}

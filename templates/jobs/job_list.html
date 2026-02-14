@@ -3,179 +3,130 @@
 {% block content %}
 
 <style>
-.job-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 24px;
-}
-
-.job-card {
-    width: 340px;
-    border-radius: 20px;
-    padding: 24px;
-    border: 2px solid white;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    position: relative;
-    transition: 0.3s;
-    background: var(--card-bg, #FFE4D6);
-}
-
-.job-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0,0,0,0.12);
-}
-
-.job-tag {
-    border: 1.5px solid rgba(0,0,0,0.15);
-    border-radius: 20px;
-    padding: 6px 14px;
-    font-size: 12px;
-    margin-right: 8px;
-    margin-bottom: 8px;
-    display: inline-block;
-}
-
-.details-btn {
-    position: absolute;
-    bottom: 24px;
-    right: 24px;
-    background: black;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    border-radius: 24px;
-    transition: 0.2s;
-}
-
-.details-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.company-logo {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    object-fit: cover;
-}
-
-.logo-placeholder {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    background: #E5E7EB;
-}
+    .hover-card {
+        transition: transform 0.2s ease-in-out;
+    }
+    .hover-card:hover {
+        transform: translateY(-5px);
+    }
 </style>
 
-<h3 class="mb-4">Available Jobs</h3>
-
-<div class="job-grid">
-
-{% for job in jobs %}
-
-<div class="job-card"
-     data-deadline="{{ job.application_deadline|date:'Y-m-d H:i:s' }}"
-     data-bg="{{ job.card_color|default:'#FFE4D6' }}">
-
-    <!-- Expired Badge -->
-    {% if job.application_deadline and job.application_deadline < now %}
-        <div class="position-absolute top-0 end-0 m-3">
-            <span class="badge bg-danger px-3 py-2">Expired</span>
-        </div>
-    {% endif %}
-
-    <!-- Company Logo + Name -->
-    <div class="d-flex align-items-center gap-3 mb-3">
-
-        {% if job.image %}
-            <img src="{{ job.image.url }}" class="company-logo">
-        {% else %}
-            <div class="logo-placeholder"></div>
-        {% endif %}
-
-        <div>
-            <h6 class="mb-0">{{ job.company_name }}</h6>
-            <small class="text-muted">
-                Posted on {{ job.created_at|date:"d M Y" }}
-            </small>
-        </div>
-
-    </div>
-
-    <!-- Title -->
-    <h4>{{ job.title }}</h4>
-
-    <!-- Salary -->
-    <div class="mt-3">
-        {% if job.ctc %}
-            <strong>{{ job.ctc }} LPA</strong>
-        {% else %}
-            <strong>As per company norms</strong>
-        {% endif %}
-    </div>
-
-    <!-- Deadline -->
-    <div class="text-muted mt-2">
-        {% if job.application_deadline %}
-            Apply before: <br>{{ job.application_deadline|date:"d M Y, h:i A" }}
-        {% else %}
-            No deadline specified
-        {% endif %}
-    </div>
-
-    {% if request.user.role == "STUDENT" %}
-    {% if request.user.role == "STUDENT" %}
-    {% if job.id in applied_job_ids %}
-        <button class="details-btn" style="background:green;">
-            Applied
-        </button>
-    {% else %}
-        <a href="/jobs/{{ job.id }}/">
-            <button class="details-btn">Details</button>
-        </a>
-    {% endif %}
-{% else %}
-    <a href="/jobs/{{ job.id }}/">
-        <button class="details-btn">Details</button>
-    </a>
-{% endif %}
-
-{% else %}
-    <a href="/jobs/{{ job.id }}/">
-        <button class="details-btn">Details</button>
-    </a>
-{% endif %}
-
-
+<!-- Filters -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="mb-0 fw-bold">Placement Drives</h3>
 </div>
 
-{% endfor %}
+<div class="card shadow-soft border-0 mb-5 rounded-4">
+    <div class="card-body p-4">
+        <form method="GET" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-bold text-uppercase">Branch Filter</label>
+                <select name="branch" class="form-select border-light bg-light">
+                    <option value="all">All Branches</option>
+                    {% for branch in branch_list %}
+                        <option value="{{ branch }}"
+                            {% if branch == selected_branch %}selected{% endif %}>
+                            {{ branch }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
+            <div class="col-md-4">
+                <label class="form-label text-muted small fw-bold text-uppercase">Eligibility Filter</label>
+                <select name="eligibility" class="form-select border-light bg-light">
+                    <option value="all">All Jobs</option>
+                    <option value="eligible"
+                        {% if eligibility_filter == "eligible" %}selected{% endif %}>
+                        Eligible
+                    </option>
+                    <option value="not_eligible"
+                        {% if eligibility_filter == "not_eligible" %}selected{% endif %}>
+                        Not Eligible
+                    </option>
+                </select>
+            </div>
+
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100 rounded-pill shadow-sm">
+                    <i class="bi bi-funnel me-2"></i> Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 
-<script>
-// Apply background color
-document.querySelectorAll('.job-card').forEach(card => {
-    card.style.background = card.dataset.bg;
-});
+<!-- Jobs Grid -->
+<div class="row g-4">
+    {% for item in jobs_with_data %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-soft h-100 border-0 rounded-4 overflow-hidden hover-card"
+             style="background-color: {{ item.job.card_color|default:'#FFE4D6' }};">
 
-// Expiration UI effect
-document.querySelectorAll('.job-card').forEach(card => {
+            <div class="card-body d-flex flex-column p-4">
 
-    let deadlineValue = card.dataset.deadline;
+                <div class="d-flex gap-3 align-items-start mb-3">
+                    {% if item.job.image %}
+                        <img src="{{ item.job.image.url }}"
+                             class="rounded-3 shadow-sm bg-white"
+                             style="width:56px;height:56px;object-fit:contain;padding:4px;">
+                    {% else %}
+                        <div class="rounded-3 shadow-sm bg-light d-flex align-items-center justify-content-center text-secondary" style="width:56px;height:56px;">
+                           <i class="bi bi-building fs-4"></i>
+                        </div>
+                    {% endif %}
 
-    if(!deadlineValue) return;
+                    <div>
+                        <h5 class="fw-bold mb-1 text-dark">
+                            {{ item.job.company_name }}
+                        </h5>
+                        <small class="text-muted">
+                            {{ item.job.title }}
+                        </small>
+                    </div>
+                </div>
 
-    let deadline = new Date(deadlineValue);
-    let now = new Date();
+                <p class="text-secondary small mb-4">
+                    {{ item.job.description|truncatewords:18 }}
+                </p>
 
-    if(now > deadline){
-        card.style.background = "#6B7280";
-        card.style.color = "white";
-        card.style.opacity = "0.8";
-    }
-});
-</script>
+                <div class="mt-auto pt-3 border-top border-light d-flex justify-content-between align-items-center">
+
+                    {% if item.eligibility.eligible %}
+                        <span class="badge bg-success rounded-pill px-3 py-2">
+                            Eligible
+                        </span>
+                    {% else %}
+                        <span class="badge bg-danger rounded-pill px-3 py-2">
+                            Not Eligible
+                        </span>
+                    {% endif %}
+
+                    {% if item.is_applied %}
+                        <button class="btn btn-secondary btn-sm rounded-pill px-4" disabled>
+                            Applied
+                        </button>
+                    {% else %}
+                        <a href="{% url 'job_detail' item.job.id %}"
+                           class="btn btn-primary btn-sm rounded-pill px-4 text-center">
+                            View Details
+                        </a>
+                    {% endif %}
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div class="text-muted opacity-50 mb-3">
+            <i class="bi bi-search display-1"></i>
+        </div>
+        <h4 class="text-muted fw-bold">No Drives Found</h4>
+        <p class="text-secondary">Try adjusting your filters or check back later.</p>
+    </div>
+    {% endfor %}
+</div>
 
 {% endblock %}
-

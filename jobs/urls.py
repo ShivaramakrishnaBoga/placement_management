@@ -10,5 +10,12 @@ urlpatterns = [
     path('export/<int:job_id>/', views.export_excel, name='export_excel'),
     path('export-responses/<int:job_id>/', views.export_student_responses, name='export_student_responses'),
 
+    # Guidance
+    path('guidance/', views.guidance_list, name='guidance_list'),
+    path('guidance/<int:job_id>/', views.guidance_detail, name='guidance_detail'),
+    path('guidance/create/<int:job_id>/', views.create_guidance, name='create_guidance'),
+    path('guidance/update/<int:job_id>/', views.update_round_status, name='update_round_status'),
+    path('guidance/export/<int:job_id>/', views.export_job_guidance_data, name='export_job_guidance_data'),
+
 
 ]

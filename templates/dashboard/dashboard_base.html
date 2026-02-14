@@ -31,17 +31,17 @@
         <ul class="nav flex-column">
 
             <!-- Dynamic Dashboard Link -->
+            {% if request.user.role == "ADMIN" or request.user.role == "OFFICER" %}
             <li class="nav-item">
                 {% if request.user.role == "ADMIN" %}
                     <a class="nav-link active" href="{% url 'admin_dashboard' %}">
-                {% elif request.user.role == "OFFICER" %}
-                    <a class="nav-link active" href="{% url 'officer_dashboard' %}">
                 {% else %}
-                    <a class="nav-link active" href="{% url 'student_dashboard' %}">
+                    <a class="nav-link active" href="{% url 'officer_dashboard' %}">
                 {% endif %}
                     <i class="bi bi-speedometer2"></i> Dashboard
                 </a>
             </li>
+            {% endif %}
 
             {% if request.user.role == "ADMIN" %}
                 <li class="nav-item">
@@ -53,6 +53,20 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'manage_officers' %}">
                         <i class="bi bi-building"></i> Faculty
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                     <a class="nav-link" href="{% url 'upload_academic_master' %}">
+                        <i class="bi bi-upload"></i> Academic Master
+                    </a>
+                </li>
+            {% endif %}
+
+            {% if request.user.role == "ADMIN" or request.user.role == "OFFICER" %}
+                 <li class="nav-item">
+                    <a class="nav-link" href="{% url 'student_list' %}">
+                        <i class="bi bi-people-fill"></i> Student List
                     </a>
                 </li>
             {% endif %}
@@ -73,8 +87,32 @@
 
             {% if request.user.role == "STUDENT" %}
                 <li class="nav-item">
-                    <a class="nav-link" href="/jobs/list/">
-                        <i class="bi bi-calendar-event"></i> Available Drives
+                    <a class="nav-link" href="{% url 'student_dashboard' %}">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'job_list' %}">
+                        <i class="bi bi-briefcase"></i> Available Drives
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'guidance_list' %}">
+                        <i class="bi bi-journal-text"></i> Guidance
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'my_applications' %}">
+                        <i class="bi bi-file-earmark-text"></i> My Applications
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'student_profile' %}">
+                        <i class="bi bi-person-circle"></i> Profile
                     </a>
                 </li>
             {% endif %}

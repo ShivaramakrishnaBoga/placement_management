@@ -36,7 +36,7 @@
         <thead>
             <tr>
                 <th>Company</th>
-                <th>Export</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -44,14 +44,17 @@
             <tr>
                 <td>{{ job.title }}</td>
                 <td>
-                    <a href="/jobs/export/{{ job.id }}/" class="btn btn-sm btn-primary">
-                        Basic Excel
-                    </a>
-
-                    <a href="/jobs/export-responses/{{ job.id }}/"
-                       class="btn btn-sm btn-success">
-                        Responses
-                    </a>
+                    <div class="btn-group">
+                        <a href="{% url 'export_excel' job.id %}" class="btn btn-sm btn-primary">
+                            Basic Excel
+                        </a>
+                        <a href="{% url 'export_student_responses' job.id %}" class="btn btn-sm btn-success">
+                            Responses
+                        </a>
+                        <a href="{% url 'create_guidance' job.id %}" class="btn btn-sm btn-warning">
+                            Add Guide
+                        </a>
+                    </div>
                 </td>
             </tr>
             {% empty %}
@@ -68,7 +71,7 @@
 <div class="card shadow-soft p-3">
     <h5>Applications</h5>
 
-    <table class="table">
+    <table class="table align-middle">
         <thead>
             <tr>
                 <th>Student</th>
@@ -79,38 +82,43 @@
         </thead>
         <tbody>
 
-            {% for job in jobs %}
-                {% for application in job.application_set.all %}
-                <tr>
-                    <td>{{ application.student.username }}</td>
-                    <td>{{ job.title }}</td>
-                    <td>
-                        <strong>
-                            {{ application.status }}
-                        </strong>
-                    </td>
-                    <td>
-                        <form method="POST"
-                              action="{% url 'update_status' application.id %}">
-                            {% csrf_token %}
-                            <select name="status"
-                                    class="form-select form-select-sm">
-                                <option value="Applied">Applied</option>
-                                <option value="Selected">Selected</option>
-                                <option value="Rejected">Rejected</option>
+            {% for application in applications %}
+            <tr>
+                <td>
+                    {{ application.student.username }}<br>
+                    <small class="text-muted">{{ application.student.email }}</small>
+                </td>
+                <td>{{ application.job.title }}</td>
+                <td>
+                    {% if application.status == 'SELECTED' %}
+                        <span class="badge bg-success">Selected</span>
+                    {% elif application.status == 'REJECTED' %}
+                        <span class="badge bg-danger">Rejected</span>
+                    {% elif application.status == 'SHORTLISTED' %}
+                        <span class="badge bg-info text-dark">Shortlisted</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ application.status }}</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="POST" action="{% url 'update_status' application.id %}">
+                        {% csrf_token %}
+                        <div class="input-group input-group-sm" style="max-width: 200px;">
+                            <select name="status" class="form-select">
+                                <option value="APPLIED" {% if application.status == "APPLIED" %}selected{% endif %}>Applied</option>
+                                <option value="SHORTLISTED" {% if application.status == "SHORTLISTED" %}selected{% endif %}>Shortlisted</option>
+                                <option value="SELECTED" {% if application.status == "SELECTED" %}selected{% endif %}>Selected</option>
+                                <option value="REJECTED" {% if application.status == "REJECTED" %}selected{% endif %}>Rejected</option>
                             </select>
-
-                            <button class="btn btn-primary btn-sm mt-1">
-                                Update
-                            </button>
-                        </form>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4">No applications yet.</td>
-                </tr>
-                {% endfor %}
+                            <button class="btn btn-primary">Update</button>
+                        </div>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center py-3">No applications yet.</td>
+            </tr>
             {% endfor %}
 
         </tbody>

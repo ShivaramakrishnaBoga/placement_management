@@ -51,39 +51,46 @@
 
 </div>
 
-<!-- Charts + Table -->
+<!-- Drives + Chart Row -->
 <div class="row">
 
-    <!-- Donut Chart -->
-    <div class="col-md-6">
-        <div class="card shadow-soft p-3">
-            <h5>Placements Overview</h5>
-            <canvas id="placementChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Latest Drives -->
-    <div class="col-md-6">
+    <!-- LEFT: Latest Drives -->
+    <div class="col-md-8">
         <div class="card shadow-soft p-3">
             <h5>Latest Placement Drives</h5>
-            <table class="table">
+
+            <table class="table align-middle">
                 <thead>
                     <tr>
                         <th>Company</th>
+                        <th>Role</th>
                         <th>Status</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for job in jobs %}
                     <tr>
+                        <td><strong>{{ job.company_name }}</strong></td>
                         <td>{{ job.title }}</td>
                         <td>
-                            <span class="badge bg-primary">In Progress</span>
+                            {% if job.status == "OPEN" %}
+                                <span class="badge bg-success">Open</span>
+                            {% elif job.status == "UPCOMING" %}
+                                <span class="badge bg-warning text-dark">Upcoming</span>
+                            {% elif job.status == "IN_PROGRESS" %}
+                                <span class="badge bg-primary">In Progress</span>
+                            {% elif job.status == "CLOSED" %}
+                                <span class="badge bg-secondary">Closed</span>
+                            {% else %}
+                                <span class="badge bg-dark">{{ job.status }}</span>
+                            {% endif %}
                         </td>
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="2">No placement drives available</td>
+                        <td colspan="3" class="text-center">
+                            No placement drives available
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -91,7 +98,16 @@
         </div>
     </div>
 
+    <!-- RIGHT: Donut Chart -->
+    <div class="col-md-4">
+        <div class="card shadow-soft p-3">
+            <h5>Placements Overview</h5>
+            <canvas id="placementChart"></canvas>
+        </div>
+    </div>
+
 </div>
+
 
 <!-- Safe JSON Injection -->
 {{ selected|json_script:"selected-data" }}
