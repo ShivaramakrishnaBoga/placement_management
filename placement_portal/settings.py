@@ -18,6 +18,13 @@ DEBUG = os.environ.get("DEBUG", "False") == "True"
 
 ALLOWED_HOSTS = ["*"]
 
+# Railway HTTPS fix
+CSRF_TRUSTED_ORIGINS = [
+    "https://placementmanagement-production.up.railway.app",
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
 # ==============================
 # APPLICATIONS
@@ -148,7 +155,7 @@ USE_TZ = True
 
 
 # ==============================
-# STATIC & MEDIA (Production Ready)
+# STATIC & MEDIA
 # ==============================
 
 STATIC_URL = '/static/'
